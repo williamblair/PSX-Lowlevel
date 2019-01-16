@@ -42,6 +42,15 @@ typedef struct {
 
 typedef struct {
     
+    Vertex v1;
+    Vertex v2;
+    Vertex v3;
+    Vertex v4;
+    
+} Rectangle;
+
+typedef struct {
+    
     vu32 *gp0;
     vu32 *gp1;
     
@@ -71,5 +80,6 @@ void psx_clear_bg(PSX *psx, uint32_t color);
 /******************** Render Polygon Commands *************************/
 ////////////////////////////////////////////////////////////////////////
 void psx_draw_triangle(PSX *psx, Triangle *t);
+void psx_draw_rectangle(PSX *psx, Rectangle *r);
 
 #endif // PSX_H_INCLUDED

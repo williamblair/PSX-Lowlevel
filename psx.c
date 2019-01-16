@@ -154,4 +154,37 @@ void psx_draw_triangle(PSX *psx, Triangle *t)
     *psx->gp0 = (t->v3.y << 16) | t->v3.x;
 }
 
+void psx_draw_rectangle(PSX *psx, Rectangle *r)
+{
+    psx_wait_gpu_cmd(psx);
+    
+    // command 0x38 - shaded four point polygon, opaque + first color
+    *psx->gp0 = (0x38 << 24) | r->v1.color;
+    
+    // first vertex
+    *psx->gp0 = (r->v1.y << 16) | r->v1.x;
+    
+    // second color
+    *psx->gp0 = r->v2.color;
+    
+    // second vertex
+    *psx->gp0 = (r->v2.y << 16) | r->v2.x;
+    
+    // third color
+    *psx->gp0 = r->v3.color;
+    
+    // third vertex
+    *psx->gp0 = (r->v3.y << 16) | r->v3.x;
+    
+    // fourth color
+    *psx->gp0 = r->v4.color;
+    
+    // fourth vertex
+    *psx->gp0 = (r->v4.y << 16) | r->v4.x;
+}
+
+
+
+
+
 
