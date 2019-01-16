@@ -11,6 +11,9 @@ int main(void)
     PSX psx;
     psx_init(&psx);
     
+    // enable interrupts?
+    //psx.irq_stat = 
+    
     // triangle vertices
     Triangle tri = (Triangle){
         {10,  10, 0xFF0000},
@@ -20,7 +23,7 @@ int main(void)
     
     for(;;)
     {
-        psx_clear_bg(&psx, 0x00FFFF);
+        psx_clear_bg(&psx, 0x888800);
         
         psx_draw_triangle(&psx, &tri);
         

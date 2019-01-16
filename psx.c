@@ -33,9 +33,13 @@ void psx_wait_gpu_cmd(PSX *psx)
 // taken from ARM9 psxdev - https://github.com/ARM9/psxdev
 void psx_wait_vblank(PSX *psx)
 {
-    while((*psx->irq_stat & IRQ_VBLANK) != 0);
+    // 0 == no irq
+    while((*psx->irq_stat & IRQ_VBLANK) == 0);
     
-    *psx->irq_stat = ~IRQ_VBLANK;
+    // acknowledge the interrupt (write a zero to the vblank bit)
+    *psx->irq_stat &= ~IRQ_VBLANK;
+    
+    printf("Exiting wait vblank\n");
 }
 
 void psx_init(PSX *psx)
@@ -43,8 +47,8 @@ void psx_init(PSX *psx)
     // Set pointers
     psx->gp0 = (vu32*)GP0;
     psx->gp1 = (vu32*)GP1;
-    psx->irq_mask = (vu16*)IRQ_MASK;
-    psx->irq_stat = (vu16*)IRQ_STAT;
+    psx->irq_mask = (vu16*)I_MASK;
+    psx->irq_stat = (vu16*)I_STAT;
     
     // reset command 0x00
     *psx->gp1 = 0x00;

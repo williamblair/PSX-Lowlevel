@@ -12,8 +12,8 @@
 #define GP1 0x1F801814
 
 
-#define IRQ_STAT  0x1F801070 // interrupt status register
-#define IRQ_MASK  0x1F801074 // interrupt mask register
+#define I_STAT  0x1F801070 // interrupt status register
+#define I_MASK  0x1F801074 // interrupt mask register
 
 // interrupt types
 #define IRQ_VBLANK 0x001
