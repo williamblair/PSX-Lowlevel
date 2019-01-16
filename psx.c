@@ -18,10 +18,33 @@ void psx_wait_gpu(PSX *psx)
     printf("Exiting waitgpu\n");
 }
 
+void psx_wait_gpu_cmd(PSX *psx)
+{
+    uint8_t status;
+    
+    do {
+        
+        // get bit 28 from the status register
+        status = ((*psx->gp1) >> 26) & 1;
+        
+    } while (!status); // bit 26 = 0 -> not ready to receive command word
+}
+
+// taken from ARM9 psxdev - https://github.com/ARM9/psxdev
+void psx_wait_vblank(PSX *psx)
+{
+    while((*psx->irq_stat & IRQ_VBLANK) != 0);
+    
+    *psx->irq_stat = ~IRQ_VBLANK;
+}
+
 void psx_init(PSX *psx)
 {
+    // Set pointers
     psx->gp0 = (vu32*)GP0;
     psx->gp1 = (vu32*)GP1;
+    psx->irq_mask = (vu16*)IRQ_MASK;
+    psx->irq_stat = (vu16*)IRQ_STAT;
     
     // reset command 0x00
     *psx->gp1 = 0x00;
@@ -61,20 +84,33 @@ void psx_init(PSX *psx)
     *psx->gp1 = 0x08000001; // 320x240 resolution, NTSC, non interlaced
 
     // note gp0 now
-    // draw mode
-    *psx->gp0 = 0xE10006Cf;
+    // Draw Mode setting (aka "Texpage")
+    // 0-3   Texture page X Base   (N*64) (ie. in 64-halfword steps)    ;GPUSTAT.0-3
+    // 4     Texture page Y Base   (N*256) (ie. 0 or 256)               ;GPUSTAT.4
+    // 5-6   Semi Transparency     (0=B/2+F/2, 1=B+F, 2=B-F, 3=B+F/4)   ;GPUSTAT.5-6
+    // 7-8   Texture page colors   (0=4bit, 1=8bit, 2=15bit, 3=Reserved);GPUSTAT.7-8
+    // 9     Dither 24bit to 15bit (0=Off/strip LSBs, 1=Dither Enabled) ;GPUSTAT.9
+    // 10    Drawing to display area (0=Prohibited, 1=Allowed)          ;GPUSTAT.10
+    // 11    Texture Disable (0=Normal, 1=Disable if GP1(09h).Bit0=1)   ;GPUSTAT.15
+    //         (Above might be chipselect for (absent) second VRAM chip?)
+    // 12    Textured Rectangle X-Flip   (BIOS does set this bit on power-up...?)
+    // 13    Textured Rectangle Y-Flip   (BIOS does set it equal to GPUSTAT.13...?)
+    // 14-23 Not used (should be 0)
+    *psx->gp0 = 0xE10006CF;
 
-    // clip start command 0xE3
+    // Set drawing area top left (X1,Y1)
     *psx->gp0 = 0xE3000000;
 
-    // clip end command 0xE4
+    // Set drawing area bottom right (X2,Y2)
+    // Render commands GP0(0x20..0x7F) automatically clip anything 
+    //   outside of this region
     *psx->gp0 = 0xE407429F;
 
-    // draw offset
+    // Set drawing offset
     *psx->gp0 = 0xE5000000;
 
-    // note back to m_gp1
-    // enable display
+    // note back to gp1
+    // Display Enable
     *psx->gp1 = 0x03000000;
 
     printf("Exiting initgpu\n");
@@ -82,7 +118,36 @@ void psx_init(PSX *psx)
 
 void psx_clear_bg(PSX *psx, uint32_t color)
 {
+    // draw rectangle in vram command
     *psx->gp0 = (0x02 << 24) | color; // command = 0x02, remaining bits = color
     *psx->gp0 = 0x00000000; // top left - 0,0
     *psx->gp0 = 0x00FF0140; // height,width - 240,320
 }
+
+////////////////////////////////////////////////////////////////////////
+/******************** Render Polygon Commands *************************/
+////////////////////////////////////////////////////////////////////////
+void psx_draw_triangle(PSX *psx, Triangle *t)
+{
+    psx_wait_gpu_cmd(psx);
+    
+    // command 0x30 - shaded three point polygon, opaque + first color
+    *psx->gp0 = (0x30 << 24) | t->v1.color;
+    
+    // first vertex
+    *psx->gp0 = (t->v1.y << 16) | t->v1.x;
+    
+    // second color
+    *psx->gp0 = t->v2.color;
+    
+    // second vertex
+    *psx->gp0 = (t->v2.y << 16) | t->v2.x;
+    
+    // third color
+    *psx->gp0 = t->v3.color;
+    
+    // third vertex
+    *psx->gp0 = (t->v3.y << 16) | t->v3.x;
+}
+
+
