@@ -11,9 +11,6 @@ int main(void)
     PSX psx;
     psx_init(&psx);
     
-    // enable interrupts?
-    //psx.irq_stat = 
-    
     // triangle vertices
     Triangle tri = (Triangle){
         {10,  10, 0xFF0000},
