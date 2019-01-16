@@ -1,0 +1,5 @@
+*.bin
+*.exe
+*.cpp
+*.geany
+*.elf
