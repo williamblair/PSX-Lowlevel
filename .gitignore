@@ -3,3 +3,4 @@
 *.cpp
 *.geany
 *.elf
+*build
