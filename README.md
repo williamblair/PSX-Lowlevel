@@ -1,6 +1,6 @@
 # Low level PSX
 
-Ps1 programming without a SDK.
+Ps1 programming without SDK libraries.
 
 Much inspired and taken from:
 
@@ -9,10 +9,12 @@ Much inspired and taken from:
     https://github.com/ARM9/psxdev
     https://problemkaputt.de/psx-spx.htm
 
-At the moment the makefile assumes you have Lameguy 64's PSN00bSDK
-(for the linker script and libC)
+makefile assumes you have Lameguy 64's PSN00bSDK
+(for the linker script and libc)
 
     https://github.com/Lameguy64/PSn00bSDK
 
 The `raw_asm` directory contains a program to fill the screen white in main.asm
-TODO - c_test directory
+The `c_test` directory draws hello world with a textured font based on Peter Lemon's
+hello world assembly example
+
