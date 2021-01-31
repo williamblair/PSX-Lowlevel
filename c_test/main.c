@@ -2,9 +2,12 @@
  * main.c
  */
 
+#include <string.h>
+
 typedef unsigned char  uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int   uint32_t;
+typedef int            int32_t;
 
 #define GP0 0x1F801810 // GPU command ports 0 and 1
 #define GP1 0x1F801814
@@ -77,12 +80,60 @@ static inline void FillRect( uint16_t x,
     WriteRegWord( GP0, (height << 16)+(width & 0xFFFF) );
 }
 
+static inline void DrawChar( uint16_t x,
+                             uint16_t y,
+                             uint16_t fontWidth,
+                             uint16_t fontHeight,
+                             uint8_t* fontTexture,
+                             char letter )
+{
+    WriteGP0( 0xA0, 0x000000 ); // copy rectangle from CPU to VRAM
+    WriteRegWord( GP0, (y << 16)+(x & 0xFFFF) ); // X and Y location
+    WriteRegWord( GP0, (fontHeight << 16)+(fontWidth & 0xFFFF) ); // width and height
+
+    // calculate texture area to copy based on the letter
+    uint32_t letterIndex = (uint32_t)(letter);
+    int32_t amountToCopy = (fontWidth*fontHeight / 2); // size of texture memory to copy in words
+    letterIndex *= 128;
+    uint32_t* texVal = (uint32_t*)&fontTexture[letterIndex];
+    // Copy the data one word at a time
+    while ( amountToCopy > 0 )
+    {
+        WriteRegWord( GP0, *texVal );
+        ++texVal;
+        --amountToCopy;
+    }
+}
+static inline void DrawString( uint16_t x,
+                               uint16_t y,
+                               uint16_t fontWidth,
+                               uint16_t fontHeight,
+                               uint8_t* fontTexture,
+                               char* string )
+{
+    uint32_t i;
+    uint32_t len = strlen( string );
+    for (i = 0; i < len; i++)
+    {
+        DrawChar( x, y, fontWidth, fontHeight, fontTexture, *string );
+        string++;
+        x += fontWidth;
+    }
+}
+
+#include "FontRed8x8.h"
+
 int main(void)
 {
     Init();
     FillRect( 0,0, // x,y
               319,239, // width, height
-              RGB(255, 0, 0) ); // color
+              RGB(100, 100, 100) ); // color
+
+    DrawString( 10,10,
+                8,8,
+                FontRed,
+                "Hello World" );
 
     while (1)
     {

@@ -16,7 +16,7 @@ OFILES		= $(addprefix build/,$(CFILES:.c=.o)) \
 
 # Project specific include and library directories
 # (use -I for include dirs, -L for library dirs)
-INCLUDE	 	+=
+INCLUDE	 	+= -I$(PSNOOB_DIR)/libpsn00b/include
 LIBDIRS		+= -L$(PSNOOB_DIR)/libpsn00b
 
 # Libraries to link
