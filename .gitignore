@@ -4,3 +4,4 @@
 *.geany
 *.elf
 *build
+*.swp
