@@ -14,7 +14,6 @@ makefile assumes you have Lameguy 64's PSN00bSDK
 
     https://github.com/Lameguy64/PSn00bSDK
 
-The `raw_asm` directory contains a program to fill the screen white in main.asm
-The `c_test` directory draws hello world with a textured font based on Peter Lemon's
-hello world assembly example
+The `raw_asm` directory contains assembly programs using gnu assembler
+The `c_test` directory contains programs using C without any psx libraries
 
